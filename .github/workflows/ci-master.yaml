@@ -25,8 +25,12 @@ jobs:
 
       - name: Build New Images
         run: |
-          docker build -t image --target app .
-          docker build -t image-dev --target dev .
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=docker.pkg.github.com/$(echo "${REPO_NAME}")/$(echo "${IMAGE_NAME}")
+          docker pull "${IMAGE_ID}:latest" || true
+          docker pull "${IMAGE_ID}:latest-dev" || true
+          docker build --cache-from ${IMAGE_NAME}:latest -t image --target app .
+          docker build --cache-from ${IMAGE_NAME}:latest-dev -t image-dev --target dev .
       
       - name: Code Health
         run: docker run image-dev poetry run python -m pytest --mypy --flake8 --isort --black backend/
@@ -45,6 +49,10 @@ jobs:
           echo VERSION=$VERSION
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION-dev
+          docker tag image $IMAGE_ID:$VERSION-dev
+          docker push $IMAGE_ID:$VERSION-dev
       # - uses: webfactory/ssh-agent@v0.2.0
       #   with:
       #     ssh-private-key: ${{ secrets.DEPLOY_KEY }}
