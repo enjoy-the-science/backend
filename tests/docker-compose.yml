@@ -1,0 +1,35 @@
+version: '3.7'
+
+services: 
+  app:
+    image: ets-anno-backend-dev
+    command: poetry run pytest -vv -x --cov=backend/ tests/
+    depends_on: 
+      - postgres
+    restart: on-failure
+    environment: &env
+      FLASK_APP: 'backend/app.py'
+      SECRET_KEY: devkey
+      JWT_SECRET_KEY: devkey
+      DB_HOST: postgres
+      DB_NAME: anno_backend
+      DB_USER: dev
+      DB_PASS: devpass
+      ORTHANC_SESSION_VALIDITY: 600
+  orthanc:
+    image: jodogne/orthanc-plugins
+    command: /run/secrets
+    restart: on-failure
+    secrets:
+      - orthanc.json
+  postgres:
+    image: postgres:12-alpine
+    restart: on-failure
+    environment:
+      POSTGRES_DB: anno_backend
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+
+secrets:
+  orthanc.json:
+    file: ../deploy/orthanc.json

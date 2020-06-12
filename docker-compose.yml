@@ -1,0 +1,52 @@
+version: '3.7'
+
+services: 
+  app:
+    build:
+      context: .
+      target: dev
+    image: ets-anno-backend-dev
+    command: poetry run ./run.sh
+    volumes:
+      - '.:/usr/src/app'
+    ports:
+      - '8080:8080'
+    depends_on: 
+      - postgres
+    restart: on-failure
+    environment: &env
+      FLASK_APP: 'backend/app.py'
+      ## Secret keys for Flask and JWT
+      SECRET_KEY: devkey
+      JWT_SECRET_KEY: devkey
+      ## Database settings
+      DB_HOST: postgres
+      DB_NAME: anno_backend
+      DB_USER: dev
+      DB_PASS: devpass
+      ## How long (in seconds) will the orthanc session be valid when logging in through the app
+      ORTHANC_SESSION_VALIDITY: 600
+  orthanc:
+    image: jodogne/orthanc-plugins
+    command: /run/secrets
+    restart: on-failure
+    ports:
+      - '8042:8042'
+    secrets:
+      - orthanc.json
+  postgres:
+    image: postgres:12-alpine
+    restart: on-failure
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+    environment:
+      POSTGRES_DB: anno_backend
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+
+volumes:
+  postgres_data: null
+
+secrets:
+  orthanc.json:
+    file: deploy/orthanc.json

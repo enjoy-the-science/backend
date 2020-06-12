@@ -1,0 +1,38 @@
+{
+    "Name": "orthanc-dev",
+    "RemoteAccessAllowed": true,
+
+    "StorageCompression": false,
+    "LimitFindResults": 100,
+    "LimitFindInstances": 100,
+    "KeepAlive": true,
+    "TcpNoDelay": true,
+    "SaveJobs": false,
+    "StorageAccessOnFind": "Never",
+
+    "AuthenticationEnabled": false,
+    "RegisteredUsers": {
+        "dev": "devpass"
+    },
+
+    "Plugins": [
+        "/usr/local/share/orthanc/plugins/libOrthancAuthorization.so",
+        "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLIndex.so",
+        "/usr/local/share/orthanc/plugins/libOrthancPostgreSQLStorage.so"
+    ],
+
+    "Authorization": {
+        "WebService": "http://app:8080/workspace/orthanc_auth",
+        "TokenHttpHeaders": ["Authorization"]
+    },
+
+    "PostgreSQL": {
+        "EnableIndex": true,
+        "EnableStorage": true,
+        "Host": "postgres",
+        "Port": 5432,
+        "Database": "anno_backend",
+        "Username": "dev",
+        "Password": "devpass"
+    }
+}
