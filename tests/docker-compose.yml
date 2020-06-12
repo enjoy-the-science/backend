@@ -2,10 +2,10 @@ version: '3.7'
 
 services: 
   app:
-    image: ets-anno-backend-dev
+    image: image-dev
     command: poetry run pytest -vv -x --cov=backend/ tests/
     depends_on: 
-      - postgres
+      - orthanc
     restart: on-failure
     environment: &env
       FLASK_APP: 'backend/app.py'
@@ -22,6 +22,8 @@ services:
     restart: on-failure
     secrets:
       - orthanc.json
+    depends_on: 
+      - postgres
   postgres:
     image: postgres:12-alpine
     restart: on-failure
