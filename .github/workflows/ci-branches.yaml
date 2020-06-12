@@ -1,0 +1,32 @@
+on:
+  push:
+    branches-ignore:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  IMAGE_NAME: ets-anno-platform-backend
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log into Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Build New Images
+        run: |
+          scripts/get_model.sh
+          docker build -t image --target app .
+          docker build -t image-dev --target dev .
+      
+      - name: Code Health
+        run: docker run image-dev conda run python -m pytest --mypy --flake8 --isort --black backend/
+
+      - name: Tests
+        run: docker run image-dev conda run python -m pytest --disable-warnings -vvv -x tests/

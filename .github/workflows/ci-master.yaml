@@ -1,0 +1,58 @@
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+env:
+  IMAGE_NAME: ets-anno-platform-backend
+  # DEPLOY_HOSTNAME: "77.234.215.138:44051"
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Log into Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+
+      - name: Build New Images
+        run: |
+          scripts/get_model.sh
+          docker build -t image --target app .
+          docker build -t image-dev --target dev .
+      
+      - name: Code Health
+        run: docker run image-dev conda run python -m pytest --mypy --flake8 --isort --black backend/
+
+      - name: Tests
+        run: docker run image-dev conda run python -m pytest --disable-warnings -vvv -x tests/
+      
+      - name: Push Images
+        run: |
+          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_ID=docker.pkg.github.com/$(echo "${REPO_NAME}")/pencil-ml-backend
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          [ "$VERSION" == "master" ] && VERSION=latest
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag image $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
+      # - uses: webfactory/ssh-agent@v0.2.0
+      #   with:
+      #     ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      # - name: Deploy to Demo Server
+      #   run: |
+      #     docker context create deploy --docker "host=ssh://deploy@${DEPLOY_HOSTNAME}"
+      #     docker context use deploy
+      #     echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      #     docker-compose -f deploy/docker-compose.yml up -d
