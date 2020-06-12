@@ -25,7 +25,7 @@ jobs:
           docker build -t image-dev --target dev .
       
       - name: Code Health
-        run: docker run image-dev conda run python -m pytest --mypy --flake8 --isort --black backend/
+        run: docker run image-dev poetry run python -m pytest --mypy --flake8 --isort --black backend/
 
       - name: Tests
-        run: docker run image-dev conda run python -m pytest --disable-warnings -vvv -x tests/
+        run: docker run image-dev poetry run python -m pytest --disable-warnings -vvv -x tests/
