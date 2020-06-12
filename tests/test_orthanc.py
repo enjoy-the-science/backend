@@ -9,6 +9,8 @@ import requests
 def test_orthanc_basic_auth(
     test_client: flask.testing.FlaskClient, db: flask_sqlalchemy.SQLAlchemy
 ) -> None:
+    # Wait for orthanc to become available
+    time.sleep(5)
     orthanc_resp = requests.get('http://orthanc:8042')
     assert orthanc_resp.status_code == 403
 
@@ -18,8 +20,8 @@ def test_orthanc_basic_auth(
     )
     access_token = r.get_json()['access_token']
 
-    # A dirty hack
     flask_process = subprocess.Popen(['poetry', 'run', './run.sh'])
+    # Wait for the subprocess to initialize
     time.sleep(5)
 
     orthanc_resp = requests.get(
