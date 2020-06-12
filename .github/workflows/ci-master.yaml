@@ -48,13 +48,13 @@ jobs:
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           [ "$VERSION" == "master" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag image $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
-          echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION-dev
           docker tag image-dev $IMAGE_ID:$VERSION-dev
           docker push $IMAGE_ID:$VERSION-dev
+          echo IMAGE_ID=$IMAGE_ID
+          echo VERSION=$VERSION
+          docker tag image $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:$VERSION
       # - uses: webfactory/ssh-agent@v0.2.0
       #   with:
       #     ssh-private-key: ${{ secrets.DEPLOY_KEY }}
