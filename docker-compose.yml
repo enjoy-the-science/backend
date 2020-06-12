@@ -12,7 +12,7 @@ services:
     ports:
       - '8080:8080'
     depends_on: 
-      - postgres
+      - orthanc
     restart: on-failure
     environment: &env
       FLASK_APP: 'backend/app.py'
@@ -34,6 +34,8 @@ services:
       - '8042:8042'
     secrets:
       - orthanc.json
+    depends_on: 
+      - postgres
   postgres:
     image: postgres:12-alpine
     restart: on-failure
