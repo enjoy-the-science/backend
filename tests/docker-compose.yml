@@ -2,7 +2,7 @@ version: '3.7'
 
 services: 
   app:
-    image: ets-anno-backend-dev
+    image: image-dev
     command: poetry run pytest -vv -x --cov=backend/ tests/
     depends_on: 
       - postgres
