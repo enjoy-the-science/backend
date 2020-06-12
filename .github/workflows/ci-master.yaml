@@ -25,7 +25,6 @@ jobs:
 
       - name: Build New Images
         run: |
-          scripts/get_model.sh
           docker build -t image --target app .
           docker build -t image-dev --target dev .
       
