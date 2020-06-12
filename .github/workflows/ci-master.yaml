@@ -32,7 +32,7 @@ jobs:
         run: docker run image-dev poetry run python -m pytest --mypy --flake8 --isort --black backend/
 
       - name: Tests
-        run: docker run image-dev poetry run python -m pytest --disable-warnings -vvv -x tests/
+        run: docker-compose -p tests-${{ github.run_id }} -f tests/docker-compose.yml up --exit-code-from app
       
       - name: Push Images
         run: |
